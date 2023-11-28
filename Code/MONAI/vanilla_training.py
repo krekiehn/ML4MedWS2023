@@ -37,8 +37,8 @@ from datetime import datetime
 # from multiprocessing import Process, freeze_support, set_start_method
 import sys
 sys.path.append(os.getcwd())
-print(os.getcwd())
-print(sys.path)
+# print(os.getcwd())
+# print(sys.path)
 
 from Code.MONAI.CustomTransforms import ReplaceValuesNotInList
 from Code.MONAI.DataLoader import get_data_dicts, check_transforms_in_dataloader
@@ -53,6 +53,9 @@ else:
 
 # CONFIG
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"{'':#<30}")
+print(f"{' Used device is ' + str(device) + ' ':#^30}")
+print(f"{'':#<30}")
 
 set_determinism(seed=1)
 SPATIAL_DIMS = 2
