@@ -45,14 +45,22 @@ root_dir = r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023'
 
 # CONFIG
 set_determinism(seed=1)
-BATCH_SIZE = 1
 SPATIAL_DIMS = 2
 LABLES = [0, 1, 2, 3, 4, 5, 6]
 NUM_CLASSES = len(LABLES)
 LEARNING_RATE = 1e-4
-MAX_EPOCHS = 1
-# MAX_EPOCHS = 600
-VAL_INTERVAL = 1
+
+debug_mode = True
+if debug_mode:
+    # Debug Mode
+    BATCH_SIZE = 1
+    MAX_EPOCHS = 1
+    VAL_INTERVAL = 1
+else:
+    # User Mode
+    BATCH_SIZE = 16
+    MAX_EPOCHS = 600
+    VAL_INTERVAL = 1
 
 train_files, val_files = get_data_dicts(stop_index=BATCH_SIZE)
 
