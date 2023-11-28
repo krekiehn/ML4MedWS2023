@@ -12,7 +12,8 @@ WORKDIR /code/ML4MedWS2023
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN mkdir "Data/ConvertedPelvisNiftiDataset"
+RUN mkdir "/code/ML4MedWS2023/Data"
+RUN mkdir "/code/ML4MedWS2023/Data/ConvertedPelvisNiftiDataset"
 WORKDIR /code/ML4MedWS2023/Data/ConvertedPelvisNiftiDataset
 
 # Download a file from a URL and unzip it
