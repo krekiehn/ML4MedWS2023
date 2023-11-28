@@ -44,6 +44,8 @@ print_config()
 root_dir = r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023'
 
 # CONFIG
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 set_determinism(seed=1)
 SPATIAL_DIMS = 2
 LABLES = [0, 1, 2, 3, 4, 5, 6]
@@ -96,7 +98,7 @@ val_loader = DataLoader(val_ds, batch_size=1)
 # Model
 
 # standard PyTorch program style: create UNet, DiceLoss and Adam optimizer
-device = torch.device("cpu:0")
+# device = torch.device("cpu:0")
 model = UNet(
     spatial_dims=SPATIAL_DIMS,
     in_channels=1,
