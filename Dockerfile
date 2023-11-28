@@ -7,6 +7,7 @@ WORKDIR /code
 # Clone the github repository
 RUN apt-get update && apt-get install -y git
 RUN git clone https://github.com/krekiehn/ML4MedWS2023.git
+WORKDIR /code/ML4MedWS2023
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
