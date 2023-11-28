@@ -18,7 +18,7 @@ WORKDIR /code/ML4MedWS2023/Data/ConvertedPelvisNiftiDataset
 
 # Download a file from a URL and unzip it
 RUN apt-get install -y curl unzip && \
-    curl -LJO https://cloud.rz.uni-kiel.de/index.php/s/WRM33znRQjLcMZo/download && \
+    curl -LJO -o "/code/ML4MedWS2023/Data/ConvertedPelvisNiftiDataset/Converted Pelvis Nifti Dataset.zip" https://cloud.rz.uni-kiel.de/index.php/s/WRM33znRQjLcMZo/download && \
     unzip "/code/ML4MedWS2023/Data/ConvertedPelvisNiftiDataset/Converted Pelvis Nifti Dataset.zip" && \
     rm "/code/ML4MedWS2023/Data/ConvertedPelvisNiftiDataset/Converted Pelvis Nifti Dataset.zip" \
 
