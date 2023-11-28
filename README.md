@@ -7,6 +7,8 @@ If you encounter any errors, problems or have suggestions, please feel free to *
 ## Change data path
 look for "data_dir = r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023\Data\ConvertedPelvisNiftiDataset\Converted Pelvis Nifti Dataset'"
 
+## Run Code
+if the vanilla training runs, try out your self different parameters and models and so on. For that please copy "Code/MONAI/your_custom_training.py" and rename it and then customize it.
 # Data
 ## Original Dataset
 https://universe.roboflow.com/ks-fsm9o/pelvis-ap-x-ray/dataset/2
