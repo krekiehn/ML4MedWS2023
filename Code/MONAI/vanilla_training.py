@@ -93,7 +93,8 @@ val_transforms = Compose(
 
 
 # Check transforms in DataLoader
-check_transforms_in_dataloader(check_ds := Dataset(data=train_files, transform=train_transforms))
+check_ds = Dataset(data=train_files, transform=train_transforms)
+check_transforms_in_dataloader(check_ds)
 
 train_ds = Dataset(data=train_files, transform=train_transforms)
 train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
