@@ -125,7 +125,6 @@ val_loader = val_loader,
 optimizer = optimizer,
 loss_function = loss_function,
 metrics = metrics,
-# metric_name = 'DICE',
 train_ds = train_ds,
-device = torch.device("cpu:0"),
+device = device,
 )
