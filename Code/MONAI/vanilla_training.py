@@ -36,7 +36,9 @@ from datetime import datetime
 
 # from multiprocessing import Process, freeze_support, set_start_method
 import sys
-sys.path.append('Code')
+sys.path.append(os.getcwd())
+print(os.getcwd())
+print(sys.path)
 
 from Code.MONAI.CustomTransforms import ReplaceValuesNotInList
 from Code.MONAI.DataLoader import get_data_dicts, check_transforms_in_dataloader
