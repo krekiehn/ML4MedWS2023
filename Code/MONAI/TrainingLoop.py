@@ -98,6 +98,10 @@ def TRAINING(model,
                     best_metric[name] = metric
                     best_metric_epoch[name] = epoch + 1
 
+                    model_folder = os.path.join(root_dir, 'Model', 'Save')
+                    if not os.path.exists(model_folder):
+                        os.makedirs(model_folder)
+
                     torch.save(model.state_dict(), os.path.join(root_dir, 'Model', 'Save',
                                                                 f"best_metric_{name}_model_{formatted_date}.pth"))
                     print(f"saved new best metric {name} model")
