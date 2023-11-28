@@ -83,7 +83,7 @@ if debug_mode:
     train_files, val_files = get_data_dicts(stop_index=BATCH_SIZE)
 else:
     # User Mode
-    BATCH_SIZE = 2
+    BATCH_SIZE = 1
     MAX_EPOCHS = 600
     VAL_INTERVAL = 1
 
@@ -95,7 +95,7 @@ train_transforms = Compose(
         LoadImaged(keys=["image", "label"]),
         EnsureChannelFirstd(keys=["image", "label"]),
         Orientationd(keys=["image", "label"], axcodes="LP"),
-        PadToMaxSize(keys=['image', 'label']),
+        # PadToMaxSize(keys=['image', 'label']),
         ReplaceValuesNotInList(keys=['label'], allowed_values=LABLES, replacement_value=0),
         DivisiblePadd(keys=["image", "label"], k=16),
         Rand2DElasticd(keys=['image', 'label'], spacing=(20, 20), magnitude_range=(0, 20),
