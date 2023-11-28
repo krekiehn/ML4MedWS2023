@@ -39,8 +39,4 @@ https://github.com/Project-MONAI/tutorials/blob/main/3d_segmentation/spleen_segm
 8. Install all required packages via 
 'pip install -q "monai-weekly[gdown, nibabel, tqdm, ignite]"' 
 and 
-'pip install -q "matplotlib"' 
-and 
-'pip install -q "SimpleITK"'
-and 
-'pip install -q "pandas, scipy"'
+'pip install -q matplotlib SimpleITK pandas scipy'
