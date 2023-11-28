@@ -40,7 +40,7 @@ from datetime import datetime
 import sys
 sys.path.append(os.getcwd())
 
-from Code.MONAI.CustomTransforms import ReplaceValuesNotInList
+from Code.MONAI.CustomTransforms import ReplaceValuesNotInList, PadToMaxSize
 from Code.MONAI.DataLoader import get_data_dicts, check_transforms_in_dataloader
 from Code.MONAI.TrainingLoop import TRAINING
 
@@ -83,7 +83,7 @@ if debug_mode:
     train_files, val_files = get_data_dicts(stop_index=BATCH_SIZE)
 else:
     # User Mode
-    BATCH_SIZE = 1
+    BATCH_SIZE = 2
     MAX_EPOCHS = 600
     VAL_INTERVAL = 1
 
@@ -95,6 +95,7 @@ train_transforms = Compose(
         LoadImaged(keys=["image", "label"]),
         EnsureChannelFirstd(keys=["image", "label"]),
         Orientationd(keys=["image", "label"], axcodes="LP"),
+        PadToMaxSize(keys=['image', 'label']),
         ReplaceValuesNotInList(keys=['label'], allowed_values=LABLES, replacement_value=0),
         DivisiblePadd(keys=["image", "label"], k=16),
         Rand2DElasticd(keys=['image', 'label'], spacing=(20, 20), magnitude_range=(0, 20),
@@ -147,7 +148,7 @@ HD_metric = HausdorffDistanceMetric(include_background=False, reduction="mean")
 # Define multiple metrics
 metrics = {
     'dice': DiceMetric(include_background=False, reduction='mean'),
-    'hausdorff': HausdorffDistanceMetric(include_background=False, reduction='mean'),
+    # 'hausdorff': HausdorffDistanceMetric(include_background=False, reduction='mean'),
 }
 # TRAINING
 model = TRAINING(model, NUM_CLASSES = NUM_CLASSES, MAX_EPOCHS = MAX_EPOCHS, VAL_INTERVAL = VAL_INTERVAL,
