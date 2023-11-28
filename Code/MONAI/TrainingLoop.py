@@ -8,7 +8,11 @@ from monai.data import decollate_batch
 import torch, os
 from datetime import datetime
 
-root_dir = r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023'
+if os.path.isdir(r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023'):
+    root_dir = r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023'
+else:
+    root_dir = os.getcwd()
+
 current_datetime = datetime.now()
 formatted_date = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
 
