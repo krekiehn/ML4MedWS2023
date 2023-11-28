@@ -35,6 +35,9 @@ import numpy as np
 from datetime import datetime
 
 # from multiprocessing import Process, freeze_support, set_start_method
+import sys
+sys.path.append('Code')
+
 from Code.MONAI.CustomTransforms import ReplaceValuesNotInList
 from Code.MONAI.DataLoader import get_data_dicts, check_transforms_in_dataloader
 from Code.MONAI.TrainingLoop import TRAINING
