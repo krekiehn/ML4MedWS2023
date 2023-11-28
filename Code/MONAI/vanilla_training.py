@@ -52,6 +52,12 @@ LABLES = [0, 1, 2, 3, 4, 5, 6]
 NUM_CLASSES = len(LABLES)
 LEARNING_RATE = 1e-4
 
+# UNET ARCHITECTURE
+UNET_CHANNELS = (16, 32, 64, 128, 256)
+UNET_STRIDE = 2
+UNET_STRIDES = tuple([UNET_STRIDE] * (len(UNET_CHANNELS) - 1))
+K = 2**(len(UNET_CHANNELS)-1)
+
 debug_mode = True
 if debug_mode:
     # Debug Mode
@@ -71,7 +77,7 @@ train_transforms = Compose(
         LoadImaged(keys=["image", "label"]),
         EnsureChannelFirstd(keys=["image", "label"]),
         Orientationd(keys=["image", "label"], axcodes="LP"),
-        ReplaceValuesNotInList(keys=['label'], allowed_values=[0, 1, 2, 3, 4, 5, 6], replacement_value=0),
+        ReplaceValuesNotInList(keys=['label'], allowed_values=LABLES, replacement_value=0),
         DivisiblePadd(keys=["image", "label"], k=16)
     ]
 )
@@ -80,7 +86,7 @@ val_transforms = Compose(
         LoadImaged(keys=["image", "label"]),
         EnsureChannelFirstd(keys=["image", "label"]),
         Orientationd(keys=["image", "label"], axcodes="LP"),
-        ReplaceValuesNotInList(keys=['label'], allowed_values=[0, 1, 2, 3, 4, 5, 6], replacement_value=0),
+        ReplaceValuesNotInList(keys=['label'], allowed_values=LABLES, replacement_value=0),
         DivisiblePadd(keys=["image", "label"], k=16),
     ]
 )
@@ -103,8 +109,8 @@ model = UNet(
     spatial_dims=SPATIAL_DIMS,
     in_channels=1,
     out_channels=NUM_CLASSES,
-    channels=(16, 32, 64, 128, 256),
-    strides=(2, 2, 2, 2),
+    channels=UNET_CHANNELS,
+    strides=UNET_STRIDES,
     num_res_units=2,
     norm=Norm.BATCH,
 ).to(device)
