@@ -46,7 +46,10 @@ from Code.MONAI.TrainingLoop import TRAINING
 
 print_config()
 
-root_dir = r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023'
+if os.path.isdir(r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023'):
+    root_dir = r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023'
+else:
+    root_dir = os.getcwd()
 
 # CONFIG
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
