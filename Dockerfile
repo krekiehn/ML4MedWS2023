@@ -12,4 +12,4 @@ RUN git clone https://github.com/krekiehn/ML4MedWS2023.git
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Run script.py when the container launches
-CMD ["python", "./script.py"]
+CMD ["python", "./Code/GetData/GetData.py"]
