@@ -3,7 +3,10 @@ import matplotlib.pyplot as plt
 from monai.data import CacheDataset, DataLoader, Dataset
 from monai.utils import first
 
-data_dir = r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023\Data\ConvertedPelvisNiftiDataset\Converted Pelvis Nifti Dataset'
+if os.path.isdir(r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023\Data\ConvertedPelvisNiftiDataset\Converted Pelvis Nifti Dataset'):
+    data_dir = r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023\Data\ConvertedPelvisNiftiDataset\Converted Pelvis Nifti Dataset'
+else:
+    data_dir = os.path.join(os.getcwd(), 'Data', 'ConvertedPelvisNiftiDataset', 'Converted Pelvis Nifti Dataset')
 
 
 def get_data_dicts(data_dir=data_dir, stop_index=None):
