@@ -40,3 +40,5 @@ and
 'pip install -q "matplotlib"' 
 and 
 'pip install -q "SimpleITK"'
+and 
+'pip install -q "pandas, scipy"'
