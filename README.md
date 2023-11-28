@@ -40,3 +40,8 @@ https://github.com/Project-MONAI/tutorials/blob/main/3d_segmentation/spleen_segm
 'pip install -q "monai-weekly[gdown, nibabel, tqdm, ignite]"' 
 and 
 'pip install -q matplotlib SimpleITK pandas scipy'
+
+## via Dockerfile
+docker build -t ml4med:latest .
+
+docker run  --gpus device=1 -v /home/sukin699/code/ML4MedWS2023/Data/ConvertedPelvisNiftiDataset:/code/ML4MedWS2023/Data/ConvertedPelvisNiftiDataset -i -t ml4med:latest bash
