@@ -1,4 +1,4 @@
-from monai.utils import first, set_determinism
+from monai.utils import set_determinism
 from monai.transforms import (
     AsDiscrete,
     AsDiscreted,
@@ -35,20 +35,27 @@ import numpy as np
 from datetime import datetime
 
 # from multiprocessing import Process, freeze_support, set_start_method
+import sys
+sys.path.append(os.getcwd())
+# print(os.getcwd())
+# print(sys.path)
+
 from Code.MONAI.CustomTransforms import ReplaceValuesNotInList
 from Code.MONAI.DataLoader import get_data_dicts, check_transforms_in_dataloader
 from Code.MONAI.TrainingLoop import TRAINING
 
-########################################################
-# PLEASE CUSTOMIZE ME TO EXPERIMENT DIFFERENT SETTINGS #
-########################################################
-
 print_config()
 
-root_dir = r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023'
+if os.path.isdir(r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023'):
+    root_dir = r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023'
+else:
+    root_dir = os.getcwd()
 
 # CONFIG
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"{'':#<30}")
+print(f"{' Used device is ' + str(device) + ' ':#^30}")
+print(f"{'':#<30}")
 
 set_determinism(seed=1)
 SPATIAL_DIMS = 2
@@ -68,13 +75,15 @@ if debug_mode:
     BATCH_SIZE = 1
     MAX_EPOCHS = 1
     VAL_INTERVAL = 1
+
+    train_files, val_files = get_data_dicts(stop_index=BATCH_SIZE)
 else:
     # User Mode
     BATCH_SIZE = 16
     MAX_EPOCHS = 600
     VAL_INTERVAL = 1
 
-train_files, val_files = get_data_dicts(stop_index=BATCH_SIZE)
+    train_files, val_files = get_data_dicts()
 
 train_transforms = Compose(
     [
@@ -97,7 +106,8 @@ val_transforms = Compose(
 
 
 # Check transforms in DataLoader
-check_transforms_in_dataloader(check_ds := Dataset(data=train_files, transform=train_transforms))
+check_ds = Dataset(data=train_files, transform=train_transforms)
+check_transforms_in_dataloader(check_ds)
 
 train_ds = Dataset(data=train_files, transform=train_transforms)
 train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)

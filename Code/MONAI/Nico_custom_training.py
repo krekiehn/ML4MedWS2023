@@ -1,4 +1,4 @@
-from monai.utils import set_determinism
+from monai.utils import first, set_determinism
 from monai.transforms import (
     AsDiscrete,
     AsDiscreted,
@@ -14,7 +14,9 @@ from monai.transforms import (
     Invertd,
     RandAffined,
     RandGaussianNoised,
-    DivisiblePadd
+    RandAdjustContrastd,
+    DivisiblePadd,
+    Rand2DElasticd
 )
 from monai.handlers.utils import from_engine
 from monai.networks.nets import UNet
@@ -35,27 +37,20 @@ import numpy as np
 from datetime import datetime
 
 # from multiprocessing import Process, freeze_support, set_start_method
-import sys
-sys.path.append(os.getcwd())
-# print(os.getcwd())
-# print(sys.path)
-
 from Code.MONAI.CustomTransforms import ReplaceValuesNotInList
 from Code.MONAI.DataLoader import get_data_dicts, check_transforms_in_dataloader
 from Code.MONAI.TrainingLoop import TRAINING
 
+########################################################
+# PLEASE CUSTOMIZE ME TO EXPERIMENT DIFFERENT SETTINGS #
+########################################################
+
 print_config()
 
-if os.path.isdir(r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023'):
-    root_dir = r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023'
-else:
-    root_dir = os.getcwd()
+root_dir = r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023'
 
 # CONFIG
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"{'':#<30}")
-print(f"{' Used device is ' + str(device) + ' ':#^30}")
-print(f"{'':#<30}")
 
 set_determinism(seed=1)
 SPATIAL_DIMS = 2
@@ -69,7 +64,7 @@ UNET_STRIDE = 2
 UNET_STRIDES = tuple([UNET_STRIDE] * (len(UNET_CHANNELS) - 1))
 K = 2**(len(UNET_CHANNELS)-1)
 
-debug_mode = True
+debug_mode = False
 if debug_mode:
     # Debug Mode
     BATCH_SIZE = 1
@@ -85,13 +80,21 @@ else:
 
     train_files, val_files = get_data_dicts()
 
+
 train_transforms = Compose(
     [
         LoadImaged(keys=["image", "label"]),
         EnsureChannelFirstd(keys=["image", "label"]),
         Orientationd(keys=["image", "label"], axcodes="LP"),
         ReplaceValuesNotInList(keys=['label'], allowed_values=LABLES, replacement_value=0),
-        DivisiblePadd(keys=["image", "label"], k=16)
+        DivisiblePadd(keys=["image", "label"], k=16),
+        Rand2DElasticd(keys=['image', 'label'], spacing=(20, 20), magnitude_range=(0, 20),
+                       rotate_range=(-np.pi, np.pi), translate_range=((-1000, 1000), (-1000, 1000)),
+                       scale_range=((-0.5, 0.5), (-0.5, 0.5)),
+                       padding_mode="zeros", mode=["bilinear", "nearest"], prob=1),
+        # Rand2DElasticd(keys=['image'], spacing=(20), magnitude_range=(10, 20),
+        #                padding_mode="zeros", mode=["bilinear"], prob=1),
+        RandAdjustContrastd(keys=['image'], gamma=(0.5, 2), prob=1, retain_stats=True, invert_image=True),
     ]
 )
 val_transforms = Compose(
@@ -106,8 +109,7 @@ val_transforms = Compose(
 
 
 # Check transforms in DataLoader
-check_ds = Dataset(data=train_files, transform=train_transforms)
-check_transforms_in_dataloader(check_ds)
+check_transforms_in_dataloader(check_ds := Dataset(data=train_files, transform=train_transforms))
 
 train_ds = Dataset(data=train_files, transform=train_transforms)
 train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
