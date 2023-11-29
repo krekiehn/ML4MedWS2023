@@ -148,6 +148,10 @@ model = UNet(
     num_res_units=2,
     norm=Norm.BATCH,
 ).to(device)
+if device == torch.device("cuda"):
+    if torch.cuda.device_count() > 1:
+        model = torch.nn.DataParallel(model, device_ids = list(range(torch.cuda.device_count())))
+
 loss_function = DiceLoss(to_onehot_y=True, softmax=True)
 optimizer = torch.optim.Adam(model.parameters(), LEARNING_RATE)
 dice_metric = DiceMetric(include_background=False, reduction="mean")
