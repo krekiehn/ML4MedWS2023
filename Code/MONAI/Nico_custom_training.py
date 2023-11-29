@@ -84,7 +84,7 @@ if debug_mode:
     train_files, val_files = get_data_dicts(stop_index=BATCH_SIZE)
 else:
     # User Mode
-    BATCH_SIZE = 32
+    BATCH_SIZE = 16
     MAX_EPOCHS = 600
     VAL_INTERVAL = 1
 
