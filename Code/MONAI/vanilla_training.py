@@ -14,8 +14,11 @@ from monai.transforms import (
     Invertd,
     RandAffined,
     RandGaussianNoised,
-    DivisiblePadd
+    DivisiblePadd,
+    PadListDataCollate,
+    SpatialPadd
 )
+
 from monai.handlers.utils import from_engine
 from monai.networks.nets import UNet
 from monai.networks.layers import Norm
@@ -40,7 +43,7 @@ sys.path.append(os.getcwd())
 # print(os.getcwd())
 # print(sys.path)
 
-from Code.MONAI.CustomTransforms import ReplaceValuesNotInList
+from Code.MONAI.CustomTransforms import ReplaceValuesNotInList, PadToMaxSize
 from Code.MONAI.DataLoader import get_data_dicts, check_transforms_in_dataloader
 from Code.MONAI.TrainingLoop import TRAINING
 
@@ -72,7 +75,7 @@ K = 2**(len(UNET_CHANNELS)-1)
 debug_mode = True
 if debug_mode:
     # Debug Mode
-    BATCH_SIZE = 1
+    BATCH_SIZE = 2
     MAX_EPOCHS = 1
     VAL_INTERVAL = 1
 
@@ -90,6 +93,9 @@ train_transforms = Compose(
         LoadImaged(keys=["image", "label"]),
         EnsureChannelFirstd(keys=["image", "label"]),
         Orientationd(keys=["image", "label"], axcodes="LP"),
+        SpatialPadd(keys=["image", "label"], spatial_size=(2991, 2992)),
+        # PadListDataCollate(keys=["image", "label"]),
+        # PadToMaxSize(keys=["image", "label"]),
         ReplaceValuesNotInList(keys=['label'], allowed_values=LABLES, replacement_value=0),
         DivisiblePadd(keys=["image", "label"], k=16)
     ]
