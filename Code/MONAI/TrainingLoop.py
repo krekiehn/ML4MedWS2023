@@ -1,12 +1,15 @@
 import numpy as np
+import torch, os
+
 from monai.transforms import (
     AsDiscrete,
     Compose,
 )
 from monai.inferers import sliding_window_inference
 from monai.data import decollate_batch
-import torch, os
+
 from datetime import datetime
+from tqdm import tqdm
 
 if os.path.isdir(r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023'):
     root_dir = r'C:\Users\Nicolai\PycharmProjects\ML4MedWS2023'
@@ -52,7 +55,7 @@ def TRAINING(model,
         model.train()
         epoch_loss = 0
         step = 0
-        for batch_data in train_loader:
+        for batch_data in tqdm(train_loader):
             step += 1
             inputs, labels = (
                 batch_data["image"].to(device),
@@ -72,7 +75,7 @@ def TRAINING(model,
         if (epoch + 1) % VAL_INTERVAL == 0:
             model.eval()
             with torch.no_grad():
-                for val_data in val_loader:
+                for val_data in tqdm(val_loader):
                     val_inputs, val_labels = (
                         val_data["image"].to(device),
                         val_data["label"].to(device),
