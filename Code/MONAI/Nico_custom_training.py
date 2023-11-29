@@ -127,13 +127,13 @@ check_transforms_in_dataloader(check_ds := Dataset(data=train_files, transform=t
 # train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
 
 train_ds = CacheDataset(data=train_files, transform=train_transforms, cache_rate=1.0, num_workers=0)
-train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
+train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=0)
 
 # val_ds = Dataset(data=val_files, transform=val_transforms)
 # val_loader = DataLoader(val_ds, batch_size=1)
 
 val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=1.0, num_workers=0)
-val_loader = DataLoader(val_ds, batch_size=1, num_workers=2)
+val_loader = DataLoader(val_ds, batch_size=1, num_workers=0)
 
 # Model
 
