@@ -123,11 +123,17 @@ val_transforms = Compose(
 # Check transforms in DataLoader
 check_transforms_in_dataloader(check_ds := Dataset(data=train_files, transform=train_transforms))
 
-train_ds = Dataset(data=train_files, transform=train_transforms)
-train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
+# train_ds = Dataset(data=train_files, transform=train_transforms)
+# train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
 
-val_ds = Dataset(data=val_files, transform=val_transforms)
-val_loader = DataLoader(val_ds, batch_size=1)
+train_ds = CacheDataset(data=train_files, transform=train_transforms, cache_rate=1.0, num_workers=4)
+train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True, num_workers=4)
+
+# val_ds = Dataset(data=val_files, transform=val_transforms)
+# val_loader = DataLoader(val_ds, batch_size=1)
+
+val_ds = CacheDataset(data=val_files, transform=val_transforms, cache_rate=1.0, num_workers=4)
+val_loader = DataLoader(val_ds, batch_size=1, num_workers=4)
 
 # Model
 
