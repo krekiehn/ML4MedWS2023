@@ -20,7 +20,7 @@ def get_data_dicts(data_dir=data_dir, stop_index=None):
     val_labels = sorted(glob.glob(os.path.join(data_dir, "valid", "targets", "*.nii.gz")))
 
     val_data_dicts = [{"image": image_name, "label": label_name} for image_name, label_name in
-                      zip(train_images, train_labels)]
+                      zip(val_images, val_labels)]
 
     # train_files, val_files = train_data_dicts[:-9], val_data_dicts[-9:]
     if stop_index:
