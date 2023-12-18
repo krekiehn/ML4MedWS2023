@@ -161,10 +161,11 @@ val_transforms_BASELINE1_2 = Compose([
         EnsureChannelFirstd(keys=["image", "label"]),
         Orientationd(keys=["image", "label"], axcodes="LP"),
         ReplaceValuesNotInList(keys=['label'], allowed_values=LABELS, replacement_value=0),
+        SpatialPadd(keys=["image", "label"], spatial_size=(2991, 2991)),
+        Spacingd(keys=["image", "label"], pixdim=(10, 10), mode=("bilinear", "nearest")),
         DivisiblePadd(keys=["image", "label"], k=16),
-        SpatialPadd(keys=["image", "label"], spatial_size=(2048, 2048)),
         #Spacingd(keys=["image", "label"], pixdim=(10, 10), mode=("bilinear", "nearest")),
-        Resized(keys=["image", "label"], spatial_size=(1024, 1024), mode="nearest"),
+        #Resized(keys=["image", "label"], spatial_size=(1024, 1024), mode="nearest"),
         #PadListDataCollate(keys=["image", "label"]),
         ScaleIntensityRanged(
                     keys=["image"],
@@ -181,9 +182,9 @@ train_transforms_NextTry2 = Compose([
         EnsureChannelFirstd(keys=["image", "label"]),
         Orientationd(keys=["image", "label"], axcodes="LP"),
         ReplaceValuesNotInList(keys=['label'], allowed_values=LABELS, replacement_value=0),
+        SpatialPadd(keys=["image", "label"], spatial_size=(2991, 2991)),
+        Spacingd(keys=["image", "label"], pixdim=(10, 10), mode=("bilinear", "nearest")),
         DivisiblePadd(keys=["image", "label"], k=16),
-        #SpatialPadd(keys=["image", "label"], spatial_size=(2048, 2048)),
-        #Spacingd(keys=["image", "label"], pixdim=(10, 10), mode=("bilinear", "nearest")),
         #Resized(keys=["image", "label"], spatial_size=(1024, 1024), mode="nearest"),
         #PadListDataCollate(keys=["image", "label"]),
         ScaleIntensityRanged(
@@ -194,13 +195,15 @@ train_transforms_NextTry2 = Compose([
                     b_max=1.0,
                     clip=True,
                 ),
-        Rand2DElasticd(keys=["image", "label"], prob=0.6, spacing=(30, 30), magnitude_range=(0.1, 0.3)),
+        Rand2DElasticd(keys=["image", "label"], prob=0.6, spacing=(30, 30), magnitude_range=(0.1, 0.3), mode="nearest"),
         RandGaussianNoised(
                     keys=['image'],
                     prob=0.5,
                     mean=0.0,
                     std=0.1
                 ),
+        #SpatialPadd(keys=["image", "label"], spatial_size=(2992, 2992)),
+
     ]
 )
 

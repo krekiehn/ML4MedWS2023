@@ -53,8 +53,20 @@ if os.path.isdir(r'.\ML4MedWS2023'):
 else:
     root_dir = os.getcwd()
 
+
+# check if cuda or mps is available and set device accordingly
+def set_device():
+    if torch.cuda.is_available():
+        device = torch.device("cuda:0")
+    elif torch.backends.mps.is_available():
+        device = torch.device("mps:0")
+    else:
+        device = torch.device("cpu:0")
+    return device
+
+
 # CONFIG
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = torch.device("cpu:0")
 print(f"{'':#<30}")
 print(f"{' Used device is ' + str(device) + ' ':#^30}")
 print(f"{'':#<30}")
@@ -66,7 +78,7 @@ NUM_CLASSES = len(LABELS)
 LEARNING_RATE = 1e-3
 
 # UNET ARCHITECTURE
-#UNET_CHANNELS = (16, 32, 64, 128, 256)
+# UNET_CHANNELS = (16, 32, 64, 128, 256)
 UNET_CHANNELS = (32, 64, 128, 256, 512)
 UNET_STRIDE = 2
 UNET_STRIDES = tuple([UNET_STRIDE] * (len(UNET_CHANNELS) - 1))
@@ -75,7 +87,7 @@ K = 2 ** (len(UNET_CHANNELS) - 1)
 debug_mode = False
 if debug_mode:
     # Debug Mode
-    BATCH_SIZE = 16
+    BATCH_SIZE = 8
     MAX_EPOCHS = 2
     VAL_INTERVAL = 1
 
@@ -92,12 +104,14 @@ else:
 check_ds = Dataset(data=train_files, transform=AppliedTransforms.train_transforms_NextTry2)
 check_transforms_in_dataloader(check_ds)
 
-train_ds = CacheDataset(data=train_files, transform=AppliedTransforms.train_transforms_NextTry2, cache_rate=1.0, num_workers=2)
-#train_ds = Dataset(data=train_files, transform=AppliedTransforms.train_transforms_NextTry2)
+train_ds = CacheDataset(data=train_files, transform=AppliedTransforms.train_transforms_NextTry2, cache_rate=1.0,
+                        num_workers=2)
+# train_ds = Dataset(data=train_files, transform=AppliedTransforms.train_transforms_NextTry2)
 train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
 
-val_ds = CacheDataset(data=val_files, transform=AppliedTransforms.val_transforms_BASELINE1_2, cache_rate=1.0, num_workers=2)
-#val_ds = Dataset(data=val_files, transform=AppliedTransforms.val_transforms_BASELINE1_2)
+val_ds = CacheDataset(data=val_files, transform=AppliedTransforms.val_transforms_BASELINE1_2, cache_rate=1.0,
+                      num_workers=2)
+# val_ds = Dataset(data=val_files, transform=AppliedTransforms.val_transforms_BASELINE1_2)
 val_loader = DataLoader(val_ds, batch_size=1)
 
 # Model
@@ -125,17 +139,17 @@ metrics = {
 # TRAINING
 model, epoch_loss_values, metric_values \
     = TRAINING_withoutSlidingWindow(model, NUM_CLASSES=NUM_CLASSES, MAX_EPOCHS=MAX_EPOCHS, VAL_INTERVAL=VAL_INTERVAL,
-               train_loader=train_loader,
-               val_loader=val_loader,
-               optimizer=optimizer,
-               loss_function=loss_function,
-               metrics=metrics,
-               train_ds=train_ds,
-               indicator='_BASE1_2_128Epochs_withoutSlidingWindow_Batchsize32_Ch32-512',
-               device=device,
-               )
+                                    train_loader=train_loader,
+                                    val_loader=val_loader,
+                                    optimizer=optimizer,
+                                    loss_function=loss_function,
+                                    metrics=metrics,
+                                    train_ds=train_ds,
+                                    indicator='_BASE1_2_128Epochs_withoutSlidingWindow_Batchsize32_Ch32-512',
+                                    device=device,
+                                    )
 
 ### Outputs
-DataViz.show_masks(model, val_loader, device)
-DataViz.show_elbow_plot(epoch_loss_values=epoch_loss_values, val_interval=VAL_INTERVAL, metric_values=metric_values['dice'])
-
+DataViz.show_masks_withoutSlidingWindow(model, val_loader, device)
+DataViz.show_elbow_plot(epoch_loss_values=epoch_loss_values, val_interval=VAL_INTERVAL,
+                        metric_values=metric_values['dice'])

@@ -14,13 +14,35 @@ import Code.MONAI.AppliedTransforms
 ########################
 # show masks
 
-def show_masks(model, val_loader, device):
+def show_masks_wSlidingWindow(model, val_loader, device):
     with torch.no_grad():
         for i, val_data in enumerate(val_loader):
             roi_size = (512, 512)
             sw_batch_size = 1
-            val_outputs = sliding_window_inference(val_data["image"].to(device), SlidingWindowConfig.slidingWindow_roi_size,
+            val_outputs = sliding_window_inference(val_data["image"].to(device),
+                                                   SlidingWindowConfig.slidingWindow_roi_size,
                                                    SlidingWindowConfig.batch_size, model)
+            #val_outputs = val_data["image"].to(device)
+            plt.figure("check", (18, 6))
+            plt.subplot(1, 3, 1)
+            plt.title(f"image {i}")
+            plt.imshow(val_data["image"][0, 0, :, :], cmap="gray")
+            plt.subplot(1, 3, 2)
+            plt.title(f"label {i}")
+            plt.imshow(val_data["label"][0, 0, :, :])
+            plt.subplot(1, 3, 3)
+            plt.title(f"output {i}")
+            plt.imshow(torch.argmax(val_outputs, dim=1).detach().cpu()[0, :, :])
+            plt.show()
+            if i == 2:
+                break
+
+
+def show_masks_withoutSlidingWindow(model, val_loader, device):
+    with torch.no_grad():
+        for i, val_data in enumerate(val_loader):
+            val_outputs = model(val_data["image"].to(device))
+
             #val_outputs = val_data["image"].to(device)
             plt.figure("check", (18, 6))
             plt.subplot(1, 3, 1)
@@ -77,9 +99,9 @@ if __name__ == "__main__":
         strides=UNET_STRIDES,
         num_res_units=2,
         norm=Norm.BATCH,
-    ).to('cuda')
+    ).to('cpu')
 
-    filename = 'best_metric_hausdorff_model_2023-12-09_10-18-53_BASELINE.pth'
+    filename = 'best_metric_dice_model_2023-12-18_18-43-46__BASE1_2_128Epochs_withoutSlidingWindow_Batchsize32_Ch32-512.pth'
     path_to_pth = os.path.join('..', 'MONAI', 'Model', 'Save', filename)
     model.load_state_dict(torch.load(path_to_pth))
     model.eval()
@@ -92,7 +114,7 @@ if __name__ == "__main__":
 
 
     ### Outputs
-    show_masks(model, val_loader, 'cuda')
+    show_masks_withoutSlidingWindow(model, val_loader, 'cuda')
 
    # show_elbow_plot(epoch_loss_values=model.epoch_loss_values, val_interval=1, metric_values=model.metric_values)
 
