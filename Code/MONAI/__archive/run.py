@@ -39,6 +39,7 @@ from datetime import datetime
 
 # from multiprocessing import Process, freeze_support, set_start_method
 import sys
+
 sys.path.append(os.getcwd())
 
 from Code.MONAI.CustomTransforms import ReplaceValuesNotInList, PadToMaxSize
@@ -64,15 +65,15 @@ print(f"{'':#<30}")
 
 set_determinism(seed=1)
 SPATIAL_DIMS = 2
-LABLES = [0, 1, 2, 3, 4, 5, 6]
-NUM_CLASSES = len(LABLES)
+LABELS = [0, 1, 2, 3, 4, 5, 6]
+NUM_CLASSES = len(LABELS)
 LEARNING_RATE = 1e-4
 
 # UNET ARCHITECTURE
 UNET_CHANNELS = (16, 32, 64, 128, 256)
 UNET_STRIDE = 2
 UNET_STRIDES = tuple([UNET_STRIDE] * (len(UNET_CHANNELS) - 1))
-K = 2**(len(UNET_CHANNELS)-1)
+K = 2 ** (len(UNET_CHANNELS) - 1)
 
 debug_mode = False
 if debug_mode:
@@ -84,12 +85,11 @@ if debug_mode:
     train_files, val_files = get_data_dicts(stop_index=BATCH_SIZE)
 else:
     # User Mode
-    BATCH_SIZE = 2*2
+    BATCH_SIZE = 2 * 2
     MAX_EPOCHS = 600
     VAL_INTERVAL = 1
 
     train_files, val_files = get_data_dicts()
-
 
 train_transforms = Compose(
     [
@@ -97,16 +97,16 @@ train_transforms = Compose(
         EnsureChannelFirstd(keys=["image", "label"]),
         Orientationd(keys=["image", "label"], axcodes="LP"),
         # PadToMaxSize(keys=['image', 'label']),
-        ReplaceValuesNotInList(keys=['label'], allowed_values=LABLES, replacement_value=0),
-        SpatialPadd(keys=["image", "label"], spatial_size=(2991, 2992)),
+        ReplaceValuesNotInList(keys=['label'], allowed_values=LABELS, replacement_value=0),
+        # SpatialPadd(keys=["image", "label"], spatial_size=(2991, 2992)),
         DivisiblePadd(keys=["image", "label"], k=16),
-        Rand2DElasticd(keys=['image', 'label'], spacing=(20, 20), magnitude_range=(0, 20),
-                       rotate_range=(-np.pi, np.pi), translate_range=((-1000, 1000), (-1000, 1000)),
-                       scale_range=((-0.5, 0.5), (-0.5, 0.5)),
-                       padding_mode="zeros", mode=["bilinear", "nearest"], prob=1),
+        # Rand2DElasticd(keys=['image', 'label'], spacing=(20, 20), magnitude_range=(0, 20),
+        #               rotate_range=(-np.pi, np.pi), translate_range=((-1000, 1000), (-1000, 1000)),
+        #               scale_range=((-0.5, 0.5), (-0.5, 0.5)),
+        #               padding_mode="zeros", mode=["bilinear", "nearest"], prob=1),
         # Rand2DElasticd(keys=['image'], spacing=(20), magnitude_range=(10, 20),
         #                padding_mode="zeros", mode=["bilinear"], prob=1),
-        RandAdjustContrastd(keys=['image'], gamma=(0.5, 2), prob=1, retain_stats=True, invert_image=True),
+        # RandAdjustContrastd(keys=['image'], gamma=(0.5, 2), prob=1, retain_stats=True, invert_image=True),
     ]
 )
 val_transforms = Compose(
@@ -114,11 +114,10 @@ val_transforms = Compose(
         LoadImaged(keys=["image", "label"]),
         EnsureChannelFirstd(keys=["image", "label"]),
         Orientationd(keys=["image", "label"], axcodes="LP"),
-        ReplaceValuesNotInList(keys=['label'], allowed_values=LABLES, replacement_value=0),
+        ReplaceValuesNotInList(keys=['label'], allowed_values=LABELS, replacement_value=0),
         DivisiblePadd(keys=["image", "label"], k=16),
     ]
 )
-
 
 # Check transforms in DataLoader
 check_transforms_in_dataloader(check_ds := Dataset(data=train_files, transform=train_transforms))
@@ -150,7 +149,7 @@ model = UNet(
 ).to(device)
 if device == torch.device("cuda"):
     if torch.cuda.device_count() > 1:
-        model = torch.nn.DataParallel(model, device_ids = list(range(torch.cuda.device_count())))
+        model = torch.nn.DataParallel(model, device_ids=list(range(torch.cuda.device_count())))
 
 loss_function = DiceLoss(to_onehot_y=True, softmax=True)
 optimizer = torch.optim.Adam(model.parameters(), LEARNING_RATE)
@@ -163,12 +162,12 @@ metrics = {
     # 'hausdorff': HausdorffDistanceMetric(include_background=False, reduction='mean'),
 }
 # TRAINING
-model = TRAINING(model, NUM_CLASSES = NUM_CLASSES, MAX_EPOCHS = MAX_EPOCHS, VAL_INTERVAL = VAL_INTERVAL,
-train_loader = train_loader,
-val_loader = val_loader,
-optimizer = optimizer,
-loss_function = loss_function,
-metrics = metrics,
-train_ds = train_ds,
-device = device,
-)
+model = TRAINING(model, NUM_CLASSES=NUM_CLASSES, MAX_EPOCHS=MAX_EPOCHS, VAL_INTERVAL=VAL_INTERVAL,
+                 train_loader=train_loader,
+                 val_loader=val_loader,
+                 optimizer=optimizer,
+                 loss_function=loss_function,
+                 metrics=metrics,
+                 train_ds=train_ds,
+                 device=device,
+                 )

@@ -1,5 +1,6 @@
 # Data files
 [Dd]ata/
+Code/MONAI/Model/Save/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
