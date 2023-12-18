@@ -184,7 +184,7 @@ train_transforms_NextTry2 = Compose([
         DivisiblePadd(keys=["image", "label"], k=16),
         #SpatialPadd(keys=["image", "label"], spatial_size=(2048, 2048)),
         #Spacingd(keys=["image", "label"], pixdim=(10, 10), mode=("bilinear", "nearest")),
-        Resized(keys=["image", "label"], spatial_size=(1024, 1024), mode="nearest"),
+        #Resized(keys=["image", "label"], spatial_size=(1024, 1024), mode="nearest"),
         #PadListDataCollate(keys=["image", "label"]),
         ScaleIntensityRanged(
                     keys=["image"],
