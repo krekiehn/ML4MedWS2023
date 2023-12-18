@@ -7,14 +7,25 @@ from monai.losses import DiceLoss
 from monai.metrics import DiceMetric, HausdorffDistanceMetric
 from monai.networks.layers import Norm
 from monai.networks.nets import UNet
+from monai.transforms import (
+    EnsureChannelFirstd,
+    Compose,
+    LoadImaged,
+    Orientationd,
+    DivisiblePadd,
+    SpatialPadd,
+    Resized,
+    RandGaussianNoised
+)
 from monai.utils import set_determinism
 
+from Code.AnalyseData import DataViz
+from Code.MONAI import AppliedTransforms
+from Code.MONAI.AppliedTransforms import train_transforms_RandGaussianNoise, train_transforms_Elastic
 from Code.MONAI.CustomTransforms import ReplaceValuesNotInList
 from Code.MONAI.DataLoader import get_data_dicts, check_transforms_in_dataloader
 from Code.MONAI.TrainingLoop import TRAINING
-
-import AppliedTransforms
-import Code.AnalyseData.DataViz as DataViz
+import numpy as np
 
 # from multiprocessing import Process, freeze_support, set_start_method
 
@@ -27,7 +38,8 @@ import Code.AnalyseData.DataViz as DataViz
 # - removed SpatialPadd (used for what?)
 # - reduced Epochs
 # - transforms from another file
-# - raised Batch-Size
+# - RandGaussianNoise
+# - Learning Rate verändert auf hoch -3
 
 
 print_config()
@@ -47,7 +59,7 @@ set_determinism(seed=1)
 SPATIAL_DIMS = 2
 LABELS = [0, 1, 2, 3, 4, 5, 6]
 NUM_CLASSES = len(LABELS)
-LEARNING_RATE = 1e-4
+LEARNING_RATE = 1e-3
 
 # UNET ARCHITECTURE
 UNET_CHANNELS = (16, 32, 64, 128, 256)
@@ -55,7 +67,7 @@ UNET_STRIDE = 2
 UNET_STRIDES = tuple([UNET_STRIDE] * (len(UNET_CHANNELS) - 1))
 K = 2 ** (len(UNET_CHANNELS) - 1)
 
-debug_mode = True
+debug_mode = False
 if debug_mode:
     # Debug Mode
     BATCH_SIZE = 32
@@ -66,21 +78,20 @@ if debug_mode:
 else:
     # User Mode
     BATCH_SIZE = 32
-    MAX_EPOCHS = 32
+    MAX_EPOCHS = 256
     VAL_INTERVAL = 1
 
     train_files, val_files = get_data_dicts()
 
 # Check transforms in DataLoader
-check_ds = Dataset(data=train_files, transform=AppliedTransforms.train_transforms_BASELINE)
+check_ds = Dataset(data=train_files, transform=AppliedTransforms.train_transforms_Anna)
 check_transforms_in_dataloader(check_ds)
 
-train_ds = CacheDataset(data=train_files, transform=AppliedTransforms.train_transforms_BASELINE, cache_rate=1.0,
-                        num_workers=2)
+train_ds = CacheDataset(data=train_files, transform=AppliedTransforms.train_transforms_Anna, cache_rate=1.0, num_workers=2)
 # train_ds = Dataset(data=train_files, transform=train_transforms)
 train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
 
-val_ds = CacheDataset(data=val_files, transform=AppliedTransforms.val_transforms_BASELINE, cache_rate=1.0,
+val_ds = CacheDataset(data=val_files, transform=AppliedTransforms.val_transforms_BASELINE2, cache_rate=1.0,
                       num_workers=2)
 # val_ds = Dataset(data=val_files, transform=val_transforms)
 val_loader = DataLoader(val_ds, batch_size=1)
@@ -116,10 +127,11 @@ model, epoch_loss_values, metric_values \
                loss_function=loss_function,
                metrics=metrics,
                train_ds=train_ds,
-               indicator='BASELINE',
+               indicator='ANNA_256Epocs',
                device=device,
                )
 
 ### Outputs
 DataViz.show_masks(model, val_loader, device)
 DataViz.show_elbow_plot(epoch_loss_values=epoch_loss_values, val_interval=VAL_INTERVAL, metric_values=metric_values['dice'])
+

@@ -22,7 +22,7 @@ current_datetime = datetime.now()
 formatted_date = current_datetime.strftime("%Y-%m-%d_%H-%M-%S")
 
 
-def TRAINING(model,
+def TRAINING_withoutSlidingWindow(model,
              NUM_CLASSES: int,
              MAX_EPOCHS: int,
              VAL_INTERVAL: int,
@@ -88,7 +88,9 @@ def TRAINING(model,
                         val_data["image"].to(device),
                         val_data["label"].to(device),
                     )
-                    val_outputs = sliding_window_inference(val_inputs, SlidingWindowConfig.slidingWindow_roi_size, SlidingWindowConfig.batch_size, model)
+                    #val_outputs = sliding_window_inference(val_inputs, SlidingWindowConfig.roi_size, SlidingWindowConfig.batch_size, model)
+
+                    val_outputs = model(val_inputs)
                     val_outputs = [post_pred(i) for i in decollate_batch(val_outputs)]
                     val_labels = [post_label(i) for i in decollate_batch(val_labels)]
 
