@@ -1,7 +1,7 @@
 import numpy as np
 from monai.transforms import Compose, LoadImaged, EnsureChannelFirstd, Orientationd, DivisiblePadd, Resized, \
     RandGaussianNoised, Rand2DElasticd, SpatialPadd, Spacingd, RandRotated, ScaleIntensityRanged, RandZoomd, \
-    PadListDataCollate
+    PadListDataCollate, RandCropd, RandCropByPosNegLabeld, RandCropByLabelClassesd
 
 from Code.MONAI.CustomTransforms import ReplaceValuesNotInList
 
@@ -161,12 +161,10 @@ val_transforms_BASELINE1_2 = Compose([
         EnsureChannelFirstd(keys=["image", "label"]),
         Orientationd(keys=["image", "label"], axcodes="LP"),
         ReplaceValuesNotInList(keys=['label'], allowed_values=LABELS, replacement_value=0),
-        SpatialPadd(keys=["image", "label"], spatial_size=(2991, 2991)),
-        Spacingd(keys=["image", "label"], pixdim=(10, 10), mode=("bilinear", "nearest")),
+        #SpatialPadd(keys=["image", "label"], spatial_size=(2991, 2991)),
+        Resized(keys=["image", "label"], spatial_size=(1024, 1024), mode="nearest"),
+        Spacingd(keys=["image", "label"], pixdim=(2, 2), mode=("bilinear", "nearest")),
         DivisiblePadd(keys=["image", "label"], k=16),
-        #Spacingd(keys=["image", "label"], pixdim=(10, 10), mode=("bilinear", "nearest")),
-        #Resized(keys=["image", "label"], spatial_size=(1024, 1024), mode="nearest"),
-        #PadListDataCollate(keys=["image", "label"]),
         ScaleIntensityRanged(
                     keys=["image"],
                     a_min=0,
@@ -177,16 +175,63 @@ val_transforms_BASELINE1_2 = Compose([
                 ),
     ]
 )
-train_transforms_NextTry2 = Compose([
+train_transforms_NextTry3 = Compose([
         LoadImaged(keys=["image", "label"]),
         EnsureChannelFirstd(keys=["image", "label"]),
         Orientationd(keys=["image", "label"], axcodes="LP"),
         ReplaceValuesNotInList(keys=['label'], allowed_values=LABELS, replacement_value=0),
         SpatialPadd(keys=["image", "label"], spatial_size=(2991, 2991)),
-        Spacingd(keys=["image", "label"], pixdim=(10, 10), mode=("bilinear", "nearest")),
+        Spacingd(keys=["image", "label"], pixdim=(2, 2), mode=("bilinear", "nearest")),
         DivisiblePadd(keys=["image", "label"], k=16),
+        ScaleIntensityRanged(
+                    keys=["image"],
+                    a_min=0,
+                    a_max=225,
+                    b_min=0.0,
+                    b_max=1.0,
+                    clip=True,
+                ),
+        #RandCropByLabelClassesd(
+        #    keys=["image", "label"],
+        #    label_key="label",
+        #    spatial_size=[3, 3],
+        #    ratios=[1, 2, 3, 1],
+        #    num_classes=7,
+        #    num_samples=2,
+        #),
+        #Spacingd(keys=["image", "label"], pixdim=(10, 10), mode=("bilinear", "nearest")),
         #Resized(keys=["image", "label"], spatial_size=(1024, 1024), mode="nearest"),
         #PadListDataCollate(keys=["image", "label"]),
+
+        Rand2DElasticd(keys=["image", "label"], prob=0.6, spacing=(30, 30), magnitude_range=(0.1, 0.3), mode="nearest"),
+        RandGaussianNoised(
+                    keys=['image'],
+                    prob=0.5,
+                    mean=0.0,
+                    std=0.1
+                ),
+        #SpatialPadd(keys=["image", "label"], spatial_size=(2992, 2992)),
+
+    ]
+)
+
+train_transforms_NextTry4 = Compose([
+        LoadImaged(keys=["image", "label"]),
+        EnsureChannelFirstd(keys=["image", "label"]),
+        Orientationd(keys=["image", "label"], axcodes="LP"),
+        ReplaceValuesNotInList(keys=['label'], allowed_values=LABELS, replacement_value=0),
+        RandCropByPosNegLabeld(
+                    keys=["image", "label"],
+                    label_key="label",
+                    spatial_size=(1024, 1024),
+                    pos=1,
+                    neg=1,
+                    num_samples=4,
+                    image_key="image",
+                    image_threshold=0,
+                ),
+        Spacingd(keys=["image", "label"], pixdim=(2, 2), mode=("bilinear", "nearest")),
+        DivisiblePadd(keys=["image", "label"], k=16),
         ScaleIntensityRanged(
                     keys=["image"],
                     a_min=0,
@@ -202,8 +247,5 @@ train_transforms_NextTry2 = Compose([
                     mean=0.0,
                     std=0.1
                 ),
-        #SpatialPadd(keys=["image", "label"], spatial_size=(2992, 2992)),
-
     ]
 )
-

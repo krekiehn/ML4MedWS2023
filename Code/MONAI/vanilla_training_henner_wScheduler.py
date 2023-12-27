@@ -28,6 +28,7 @@ from Code.MONAI.TrainingLoop import TRAINING
 import numpy as np
 
 from Code.MONAI.TrainingLoop_withoutSlidingWindow import TRAINING_withoutSlidingWindow
+from Code.MONAI.TrainingLoop_withoutSlidingWindow_wScheduler import TRAINING_withoutSlidingWindow_withScheduler
 
 # from multiprocessing import Process, freeze_support, set_start_method
 
@@ -43,7 +44,7 @@ from Code.MONAI.TrainingLoop_withoutSlidingWindow import TRAINING_withoutSliding
 # - RandGaussianNoise
 # - Learning Rate verändert auf hoch 3
 # - without learning rate
-
+# - batchsize back to 16
 
 
 print_config()
@@ -84,7 +85,7 @@ UNET_STRIDE = 2
 UNET_STRIDES = tuple([UNET_STRIDE] * (len(UNET_CHANNELS) - 1))
 K = 2 ** (len(UNET_CHANNELS) - 1)
 
-debug_mode = True
+debug_mode = False
 if debug_mode:
     # Debug Mode
     BATCH_SIZE = 8
@@ -128,6 +129,10 @@ model = UNet(
 ).to(device)
 loss_function = DiceLoss(to_onehot_y=True, softmax=True)
 optimizer = torch.optim.Adam(model.parameters(), LEARNING_RATE)
+#scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.01)
+scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min')
+
+# metrics
 dice_metric = DiceMetric(include_background=False, reduction="mean")
 HD_metric = HausdorffDistanceMetric(include_background=False, reduction="mean")
 
@@ -138,18 +143,21 @@ metrics = {
 }
 # TRAINING
 model, epoch_loss_values, metric_values \
-    = TRAINING_withoutSlidingWindow(model, NUM_CLASSES=NUM_CLASSES, MAX_EPOCHS=MAX_EPOCHS, VAL_INTERVAL=VAL_INTERVAL,
-                                    train_loader=train_loader,
-                                    val_loader=val_loader,
-                                    optimizer=optimizer,
-                                    loss_function=loss_function,
-                                    metrics=metrics,
-                                    train_ds=train_ds,
-                                    indicator='_BASE1_2_128Epochs_withoutSlidingWindow_Batchsize16_Ch32-512_bigPictures_randCrop',
-                                    device=device,
-                                    )
+    = TRAINING_withoutSlidingWindow_withScheduler(model, NUM_CLASSES=NUM_CLASSES, MAX_EPOCHS=MAX_EPOCHS,
+                                                  VAL_INTERVAL=VAL_INTERVAL,
+                                                  train_loader=train_loader,
+                                                  val_loader=val_loader,
+                                                  optimizer=optimizer,
+                                                  scheduler=scheduler,
+                                                  loss_function=loss_function,
+                                                  metrics=metrics,
+                                                  train_ds=train_ds,
+                                                  indicator='_BASE1_2_128Epochs_withoutSlidingWindow_Batchsize32_Ch32-512_schedulerOnPlateau',
+                                                  device=device,
+                                                  )
 
-### Outputs
-DataViz.show_masks_withoutSlidingWindow(model, val_loader, device)
-DataViz.show_elbow_plot(epoch_loss_values=epoch_loss_values, val_interval=VAL_INTERVAL,
-                        metric_values=metric_values['dice'])
+if not debug_mode:
+    ### Outputs
+    DataViz.show_masks_withoutSlidingWindow(model, val_loader, device)
+    DataViz.show_elbow_plot(epoch_loss_values=epoch_loss_values, val_interval=VAL_INTERVAL,
+                            metric_values=metric_values['dice'])

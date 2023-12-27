@@ -71,7 +71,7 @@ def show_elbow_plot(epoch_loss_values, val_interval, metric_values):
     plt.xlabel("epoch")
     plt.plot(x, y)
     plt.subplot(1, 2, 2)
-    plt.title("Val Mean Dice")
+    plt.title("Val Mean dice")
     x = [val_interval * (i + 1) for i in range(len(metric_values))]
     y = metric_values
     plt.xlabel("epoch")
@@ -84,10 +84,10 @@ if __name__ == "__main__":
     SPATIAL_DIMS = 2
     LABELS = [0, 1, 2, 3, 4, 5, 6]
     NUM_CLASSES = len(LABELS)
-    LEARNING_RATE = 1e-4
+    LEARNING_RATE = 1e-3
 
     # UNET ARCHITECTURE
-    UNET_CHANNELS = (16, 32, 64, 128, 256)
+    UNET_CHANNELS = (32, 64, 128, 256, 512)
     UNET_STRIDE = 2
     UNET_STRIDES = tuple([UNET_STRIDE] * (len(UNET_CHANNELS) - 1))
 
@@ -99,10 +99,10 @@ if __name__ == "__main__":
         strides=UNET_STRIDES,
         num_res_units=2,
         norm=Norm.BATCH,
-    ).to('cpu')
+    ).to('cuda')
 
-    filename = 'best_metric_dice_model_2023-12-18_18-43-46__BASE1_2_128Epochs_withoutSlidingWindow_Batchsize32_Ch32-512.pth'
-    path_to_pth = os.path.join('..', 'MONAI', 'Model', 'Save', filename)
+    filename = 'best_metric_hausdorff_model_2023-12-14_16-10-18__BASE1_2_128Epochs_withoutSlidingWindow_Batchsize32_Ch32-512'
+    path_to_pth = os.path.join('..', 'MONAI', 'Model', 'Save', filename+".pth")
     model.load_state_dict(torch.load(path_to_pth))
     model.eval()
 
@@ -110,7 +110,7 @@ if __name__ == "__main__":
     train_files, val_files = get_data_dicts()
 
     val_ds = CacheDataset(data=val_files, transform=AppliedTransforms.val_transforms_BASELINE, cache_rate=1.0, num_workers=2)
-    val_loader = DataLoader(val_ds, batch_size=1)
+    val_loader = DataLoader(val_ds, batch_size=32)
 
 
     ### Outputs
