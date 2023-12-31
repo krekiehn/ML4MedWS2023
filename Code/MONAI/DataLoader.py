@@ -3,15 +3,17 @@ import matplotlib.pyplot as plt
 from monai.data import CacheDataset, DataLoader, Dataset
 from monai.utils import first
 
-relative_path = r'.\..\..\Data\ConvertedPelvisNiftiDataset\Converted Pelvis Nifti Dataset'
+relative_path = r'.\..\..\Data\ConvertedPelvisNiftiDataset\Nifti'
 if os.path.isdir(relative_path):
+    print(relative_path)
     data_dir = relative_path
 else:
-    data_dir = os.path.join(os.getcwd(), 'Data', 'ConvertedPelvisNiftiDataset', 'Converted Pelvis Nifti Dataset')
+    data_dir = os.path.join(os.getcwd(), 'Data', 'ConvertedPelvisNiftiDataset', 'Nifti')
 
 
 def get_data_dicts(data_dir=data_dir, stop_index=None):
-    print(data_dir)
+    print("os:" + os.getcwd())
+    print("datadir: " + data_dir)
     train_images = sorted(glob.glob(os.path.join(data_dir, "train", "imgs", "*.nii.gz")))
     train_labels = sorted(glob.glob(os.path.join(data_dir, "train", "targets", "*.nii.gz")))
 
