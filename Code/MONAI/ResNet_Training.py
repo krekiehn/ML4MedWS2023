@@ -6,7 +6,7 @@ from monai.data import DataLoader, Dataset, CacheDataset
 from monai.losses import DiceLoss
 from monai.metrics import DiceMetric, HausdorffDistanceMetric
 from monai.networks.layers import Norm
-from monai.networks.nets import UNet, VNet, SegResNet, SegResNetDS
+from monai.networks.nets import UNet, VNet, SegResNet, SegResNetDS, SegResNetVAE
 from monai.transforms import (
     EnsureChannelFirstd,
     Compose,
@@ -69,7 +69,7 @@ LEARNING_RATE = 1e-3
 #VNET_STRIDES = tuple([VNET_STRIDE] * (len(VNET_CHANNELS) - 1))
 #K = 2 ** (len(VNET_CHANNELS) - 1)
 
-debug_mode = True
+debug_mode = False
 if debug_mode:
     # Debug Mode
     BATCH_SIZE = 8
@@ -79,7 +79,7 @@ if debug_mode:
     train_files, val_files = get_data_dicts(stop_index=BATCH_SIZE)
 else:
     # User Mode
-    BATCH_SIZE = 16
+    BATCH_SIZE = 8
     MAX_EPOCHS = 128
     VAL_INTERVAL = 1
 
@@ -89,19 +89,18 @@ else:
 check_ds = Dataset(data=train_files, transform=AppliedTransforms.train_transforms_NextTry4)
 check_transforms_in_dataloader(check_ds)
 
-train_ds = CacheDataset(data=train_files, transform=AppliedTransforms.train_transforms_NextTry4, cache_rate=1.0,
-                        num_workers=2)
-# train_ds = Dataset(data=train_files, transform=AppliedTransforms.train_transforms_NextTry2)
+train_ds = CacheDataset(data=train_files, transform=AppliedTransforms.train_transforms_NextTry4, cache_rate=1.0, num_workers=2)
+#train_ds = Dataset(data=train_files, transform=AppliedTransforms.train_transforms_NextTry4)
 train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
 
-val_ds = CacheDataset(data=val_files, transform=AppliedTransforms.val_transforms_BASELINE1_2, cache_rate=1.0,
-                      num_workers=2)
-# val_ds = Dataset(data=val_files, transform=AppliedTransforms.val_transforms_BASELINE1_2)
+val_ds = CacheDataset(data=val_files, transform=AppliedTransforms.val_transforms_BASELINE1_2, cache_rate=1.0, num_workers=2)
+#val_ds = Dataset(data=val_files, transform=AppliedTransforms.val_transforms_BASELINE1_2)
 val_loader = DataLoader(val_ds, batch_size=1)
 
 # Model
 
 # standard PyTorch program style: create VNet, DiceLoss and Adam optimizer
+#model = SegResNetDS(
 model = SegResNetDS(
     spatial_dims=SPATIAL_DIMS,
     in_channels=1,
@@ -111,7 +110,7 @@ model = SegResNetDS(
     #num_res_units=2,
     #norm=Norm.BATCH,
 ).to(device)
-loss_function = DiceLoss(to_onehot_y=True, sigmoid=True, squared_pred=True)
+loss_function = DiceLoss(to_onehot_y=True, softmax=True, squared_pred=True)
 optimizer = torch.optim.Adam(model.parameters(), LEARNING_RATE)
 #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.01)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min')
@@ -136,7 +135,7 @@ model, epoch_loss_values, metric_values \
                                                   loss_function=loss_function,
                                                   metrics=metrics,
                                                   train_ds=train_ds,
-                                                  indicator='SEGRESNET_BASE1_2_schedulerOnPlateau',
+                                                  indicator='SEGRESNETDS_softmax_BASE1_2_schedulerOnPlateau',
                                                   device=device,
                                                   )
 

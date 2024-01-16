@@ -3,12 +3,12 @@ import matplotlib.pyplot as plt
 from monai.data import CacheDataset, DataLoader, Dataset
 from monai.utils import first
 
-relative_path = r'.\..\..\Data\ConvertedPelvisNiftiDataset\Nifti'
+relative_path = r'.\..\..\Data\ConvertedPelvisNiftiDataset\Converted Pelvis Nifti Dataset'
 if os.path.isdir(relative_path):
     print(relative_path)
     data_dir = relative_path
 else:
-    data_dir = os.path.join(os.getcwd(), 'Data', 'ConvertedPelvisNiftiDataset', 'Nifti')
+    data_dir = r'.\..\..\Data\ConvertedPelvisNiftiDataset\Converted Pelvis Nifti Dataset'
 
 
 def get_data_dicts(data_dir=data_dir, stop_index=None):

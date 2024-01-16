@@ -163,7 +163,7 @@ val_transforms_BASELINE1_2 = Compose([
         ReplaceValuesNotInList(keys=['label'], allowed_values=LABELS, replacement_value=0),
         #SpatialPadd(keys=["image", "label"], spatial_size=(2991, 2991)),
         Resized(keys=["image", "label"], spatial_size=(1024, 1024), mode="nearest"),
-        Spacingd(keys=["image", "label"], pixdim=(2, 2), mode=("bilinear", "nearest")),
+        Spacingd(keys=["image", "label"], pixdim=(3, 3), mode=("bilinear", "nearest")),
         DivisiblePadd(keys=["image", "label"], k=16),
         ScaleIntensityRanged(
                     keys=["image"],
@@ -230,7 +230,7 @@ train_transforms_NextTry4 = Compose([
                     image_key="image",
                     image_threshold=0,
                 ),
-        Spacingd(keys=["image", "label"], pixdim=(2, 2), mode=("bilinear", "nearest")),
+        Spacingd(keys=["image", "label"], pixdim=(3, 3), mode=("bilinear", "nearest")),
         DivisiblePadd(keys=["image", "label"], k=16),
         ScaleIntensityRanged(
                     keys=["image"],
