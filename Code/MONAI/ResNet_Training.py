@@ -43,8 +43,8 @@ else:
 def set_device():
     if torch.cuda.is_available():
         device = torch.device("cuda:0")
-    #elif torch.backends.mps.is_available():
-    #    device = torch.device("mps:0")
+    elif torch.backends.mps.is_available():
+        device = torch.device("mps:0")
     else:
         device = torch.device("cpu:0")
     return device
@@ -69,7 +69,7 @@ LEARNING_RATE = 1e-3
 #VNET_STRIDES = tuple([VNET_STRIDE] * (len(VNET_CHANNELS) - 1))
 #K = 2 ** (len(VNET_CHANNELS) - 1)
 
-debug_mode = False
+debug_mode = True
 if debug_mode:
     # Debug Mode
     BATCH_SIZE = 8
@@ -120,10 +120,10 @@ dice_metric = DiceMetric(include_background=False, reduction="mean", get_not_nan
 HD_metric = HausdorffDistanceMetric(include_background=False, reduction="mean", get_not_nans=True)
 
 # Define multiple metrics
-metrics = {
-    'dice': DiceMetric(include_background=False, reduction='mean'),
-    'hausdorff': HausdorffDistanceMetric(include_background=False, reduction='mean'),
-}
+#metrics = {
+#    'dice': DiceMetric(include_background=False, reduction='mean'),
+#   # 'hausdorff': HausdorffDistanceMetric(include_background=False, reduction='mean'),
+#}
 # TRAINING
 model, epoch_loss_values, metric_values \
     = TRAINING_withoutSlidingWindow_withScheduler(model, NUM_CLASSES=NUM_CLASSES, MAX_EPOCHS=MAX_EPOCHS,
@@ -133,7 +133,7 @@ model, epoch_loss_values, metric_values \
                                                   optimizer=optimizer,
                                                   scheduler=scheduler,
                                                   loss_function=loss_function,
-                                                  metrics=metrics,
+                                                  metricCalculator=dice_metric,
                                                   train_ds=train_ds,
                                                   indicator='SEGRESNETDS_softmax_BASE1_2_schedulerOnPlateau',
                                                   device=device,
