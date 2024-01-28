@@ -249,3 +249,32 @@ train_transforms_NextTry4 = Compose([
                 ),
     ]
 )
+val_transforms_BASELINE1_3 = Compose([
+        LoadImaged(keys=["image", "label"]),
+        EnsureChannelFirstd(keys=["image", "label"]),
+        Orientationd(keys=["image", "label"], axcodes="LP"),
+        ReplaceValuesNotInList(keys=['label'], allowed_values=LABELS, replacement_value=0),
+        #SpatialPadd(keys=["image", "label"], spatial_size=(2991, 2991)),
+        #Resized(keys=["image", "label"], spatial_size=(1024, 1024), mode="nearest"),
+        RandCropByPosNegLabeld(
+                            keys=["image", "label"],
+                            label_key="label",
+                            spatial_size=(1024, 1024),
+                            pos=1,
+                            neg=1,
+                            num_samples=4,
+                            image_key="image",
+                            image_threshold=0,
+                        ),
+        Spacingd(keys=["image", "label"], pixdim=(3, 3), mode=("bilinear", "nearest")),
+        DivisiblePadd(keys=["image", "label"], k=16),
+        ScaleIntensityRanged(
+                    keys=["image"],
+                    a_min=0,
+                    a_max=225,
+                    b_min=0.0,
+                    b_max=1.0,
+                    clip=True,
+                ),
+    ]
+)

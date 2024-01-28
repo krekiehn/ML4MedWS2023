@@ -52,6 +52,8 @@ def TRAINING_withoutSlidingWindow_withScheduler(model,
     best_metric_epoch = {name: -1 for name, metric in metrics.items()}
     metric_values = {name: [] for name, metric in metrics.items()}
     epoch_loss_values = []
+    metric_per_class = []
+    metric_per_class_values = []
 
     post_pred = Compose([AsDiscrete(argmax=True, to_onehot=NUM_CLASSES)])
     post_label = Compose([AsDiscrete(to_onehot=NUM_CLASSES)])
@@ -100,7 +102,10 @@ def TRAINING_withoutSlidingWindow_withScheduler(model,
                     # Evaluate multiple metrics
                     for name, metric in metrics.items():
                         metric(y_pred=val_outputs, y=val_labels)
+
                     metric_results = {name: metric.aggregate().item() for name, metric in metrics.items()}
+                    metric_per_class.append(metrics['dice'].aggregate(reduction="none").mean(axis=0))
+                    print("metric_per_class by calc: " + str(metric_per_class))
 
                 # aggregate the final mean dice result
                 def HelperBestMetric(name, metric, best_metric, best_metric_epoch, indicator):
@@ -116,8 +121,11 @@ def TRAINING_withoutSlidingWindow_withScheduler(model,
                     print(f"saved new best metric {name} model: {file}")
                     return best_metric, best_metric_epoch
 
+                print("metric_per_class before append: " + str(metric_per_class))
+                metric_per_class_values.append(metric_per_class)
                 for name, metric in metric_results.items():  # ToDo: choose what is best depending on metric (dice higher, hausdorff lower). implement this dependence. at the moment hardcoded
                     metric_values[name].append(metric)
+
                     if 'hausdorff' in name.lower():
                         if metric < best_metric[name]:
                             best_metric, best_metric_epoch = HelperBestMetric(name, metric, best_metric,
@@ -127,7 +135,7 @@ def TRAINING_withoutSlidingWindow_withScheduler(model,
                             best_metric, best_metric_epoch = HelperBestMetric(name, metric, best_metric,
                                                                               best_metric_epoch, indicator=indicator)
                     metrics[name].reset()
-
+                    metric_per_class = []
                     print(
                         # f"current epoch: {epoch + 1} current mean {metric_results}: {metric:.4f}"
                         f"current epoch: {epoch + 1} current mean {name}: {metric:.4f}"
@@ -137,4 +145,4 @@ def TRAINING_withoutSlidingWindow_withScheduler(model,
         # %%
     for name, metric in metric_results.items():
         print(f"train completed, best_metric {name}: {best_metric[name]:.4f} " f"at epoch: {best_metric_epoch[name]}")
-    return model, epoch_loss_values, metric_values
+    return model, epoch_loss_values, metric_values, metric_per_class_values

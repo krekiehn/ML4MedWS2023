@@ -1,6 +1,7 @@
 import os
 
 import torch
+from matplotlib import pyplot as plt
 from monai.config import print_config
 from monai.data import DataLoader, Dataset, CacheDataset
 from monai.losses import DiceLoss
@@ -69,18 +70,18 @@ LEARNING_RATE = 1e-3
 #VNET_STRIDES = tuple([VNET_STRIDE] * (len(VNET_CHANNELS) - 1))
 #K = 2 ** (len(VNET_CHANNELS) - 1)
 
-debug_mode = False
+debug_mode = True
 if debug_mode:
     # Debug Mode
     BATCH_SIZE = 8
-    MAX_EPOCHS = 2
+    MAX_EPOCHS = 6
     VAL_INTERVAL = 1
 
     train_files, val_files = get_data_dicts(stop_index=BATCH_SIZE)
 else:
     # User Mode
     BATCH_SIZE = 8
-    MAX_EPOCHS = 128
+    MAX_EPOCHS = 16
     VAL_INTERVAL = 1
 
     train_files, val_files = get_data_dicts()
@@ -93,7 +94,7 @@ train_ds = CacheDataset(data=train_files, transform=AppliedTransforms.train_tran
 #train_ds = Dataset(data=train_files, transform=AppliedTransforms.train_transforms_NextTry4)
 train_loader = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=True)
 
-val_ds = CacheDataset(data=val_files, transform=AppliedTransforms.val_transforms_BASELINE1_2, cache_rate=1.0, num_workers=2)
+val_ds = CacheDataset(data=val_files, transform=AppliedTransforms.val_transforms_BASELINE1_3, cache_rate=1.0, num_workers=2)
 #val_ds = Dataset(data=val_files, transform=AppliedTransforms.val_transforms_BASELINE1_2)
 val_loader = DataLoader(val_ds, batch_size=1)
 
@@ -116,8 +117,8 @@ optimizer = torch.optim.Adam(model.parameters(), LEARNING_RATE)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min')
 
 # metrics
-dice_metric = DiceMetric(include_background=False, reduction="mean", get_not_nans=True)
-HD_metric = HausdorffDistanceMetric(include_background=False, reduction="mean", get_not_nans=True)
+dice_metric = DiceMetric(include_background=False, reduction="mean")
+HD_metric = HausdorffDistanceMetric(include_background=False, reduction="mean")
 
 # Define multiple metrics
 metrics = {
@@ -125,7 +126,7 @@ metrics = {
     'hausdorff': HausdorffDistanceMetric(include_background=False, reduction='mean'),
 }
 # TRAINING
-model, epoch_loss_values, metric_values \
+model, epoch_loss_values, metric_values, metric_per_class_values \
     = TRAINING_withoutSlidingWindow_withScheduler(model, NUM_CLASSES=NUM_CLASSES, MAX_EPOCHS=MAX_EPOCHS,
                                                   VAL_INTERVAL=VAL_INTERVAL,
                                                   train_loader=train_loader,
@@ -144,3 +145,6 @@ if not debug_mode:
     DataViz.show_masks_withoutSlidingWindow(model, val_loader, device)
     DataViz.show_elbow_plot(epoch_loss_values=epoch_loss_values, val_interval=VAL_INTERVAL,
                             metric_values=metric_values['dice'])
+
+
+DataViz.show_metric_per_class(metric_per_class_values, VAL_INTERVAL)

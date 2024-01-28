@@ -6,6 +6,8 @@ from monai.data import CacheDataset, DataLoader
 from monai.inferers import sliding_window_inference
 from monai.networks.layers import Norm
 from monai.networks.nets import UNet
+from numpy import nan
+from torch import tensor
 
 from Code.MONAI import AppliedTransforms, SlidingWindowConfig
 from Code.MONAI.DataLoader import get_data_dicts
@@ -79,6 +81,33 @@ def show_elbow_plot(epoch_loss_values, val_interval, metric_values):
     plt.show()
 
 
+def show_metric_per_class(metric_p_class_values, val_interval):
+    plt.figure("train", (12, 6))
+
+    # Plot "Dice per class"
+    plt.title("Dice pro class")
+    x = [val_interval * (i + 1) for i in range(len(metric_p_class_values))]
+
+    print("-- x ---")
+    print(x)
+    print("-- metric_p_class_values ---")
+    print(metric_p_class_values)
+    print("-- end ---")
+
+    for i in range(6):
+        # Extract the metric values for the current class across all epochs
+        #for j in range(len(metric_p_class_values)):
+        #    print(j, metric_p_class_values[j].numpy())
+        y = [metric[i].cpu().numpy() for metric in metric_p_class_values]
+
+        plt.plot(x, y, label=i + 1)
+
+    plt.xlabel("epoch")
+    plt.ylabel("dice value")
+
+    plt.legend()
+    plt.show()
+
 if __name__ == "__main__":
     #### MODEL
     SPATIAL_DIMS = 2
@@ -86,35 +115,38 @@ if __name__ == "__main__":
     NUM_CLASSES = len(LABELS)
     LEARNING_RATE = 1e-3
 
-    # UNET ARCHITECTURE
-    UNET_CHANNELS = (32, 64, 128, 256, 512)
-    UNET_STRIDE = 2
-    UNET_STRIDES = tuple([UNET_STRIDE] * (len(UNET_CHANNELS) - 1))
+    savedValues = [[tensor([0.0268,    nan,    nan,    nan,    nan,    nan], device='cuda:0'), tensor([0.0244,    nan,    nan,    nan,    nan,    nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0')], [tensor([0.0273,    nan,    nan,    nan, 0.0000,    nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0')], [tensor([0.0641,    nan,    nan,    nan,    nan,    nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0')], [tensor([0.1975,    nan,    nan,    nan,    nan, 0.0061], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0')], [tensor([0.2977,    nan,    nan,    nan,    nan,    nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0')], [tensor([0.1718,    nan, 0.0000,    nan, 0.0000, 0.0000], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0'), tensor([nan, nan, nan, nan, nan, nan], device='cuda:0')]]
+    show_metric_per_class(savedValues, 1)
 
-    model = UNet(
-        spatial_dims=SPATIAL_DIMS,
-        in_channels=1,
-        out_channels=NUM_CLASSES,
-        channels=UNET_CHANNELS,
-        strides=UNET_STRIDES,
-        num_res_units=2,
-        norm=Norm.BATCH,
-    ).to('cuda')
-
-    filename = 'best_metric_hausdorff_model_2023-12-14_16-10-18__BASE1_2_128Epochs_withoutSlidingWindow_Batchsize32_Ch32-512'
-    path_to_pth = os.path.join('..', 'MONAI', 'Model', 'Save', filename+".pth")
-    model.load_state_dict(torch.load(path_to_pth))
-    model.eval()
-
-    #### FILES
-    train_files, val_files = get_data_dicts()
-
-    val_ds = CacheDataset(data=val_files, transform=AppliedTransforms.val_transforms_BASELINE, cache_rate=1.0, num_workers=2)
-    val_loader = DataLoader(val_ds, batch_size=32)
-
-
-    ### Outputs
-    show_masks_withoutSlidingWindow(model, val_loader, 'cuda')
+    # # UNET ARCHITECTURE
+    # UNET_CHANNELS = (32, 64, 128, 256, 512)
+    # UNET_STRIDE = 2
+    # UNET_STRIDES = tuple([UNET_STRIDE] * (len(UNET_CHANNELS) - 1))
+    #
+    # model = UNet(
+    #     spatial_dims=SPATIAL_DIMS,
+    #     in_channels=1,
+    #     out_channels=NUM_CLASSES,
+    #     channels=UNET_CHANNELS,
+    #     strides=UNET_STRIDES,
+    #     num_res_units=2,
+    #     norm=Norm.BATCH,
+    # ).to('cuda')
+    #
+    # filename = 'best_metric_hausdorff_model_2023-12-14_16-10-18__BASE1_2_128Epochs_withoutSlidingWindow_Batchsize32_Ch32-512'
+    # path_to_pth = os.path.join('..', 'MONAI', 'Model', 'Save', filename+".pth")
+    # model.load_state_dict(torch.load(path_to_pth))
+    # model.eval()
+    #
+    # #### FILES
+    # train_files, val_files = get_data_dicts()
+    #
+    # val_ds = CacheDataset(data=val_files, transform=AppliedTransforms.val_transforms_BASELINE, cache_rate=1.0, num_workers=2)
+    # val_loader = DataLoader(val_ds, batch_size=32)
+    #
+    #
+    # ### Outputs
+    # show_masks_withoutSlidingWindow(model, val_loader, 'cuda')
 
    # show_elbow_plot(epoch_loss_values=model.epoch_loss_values, val_interval=1, metric_values=model.metric_values)
 
