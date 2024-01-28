@@ -43,6 +43,7 @@ def TRAINING_withoutSlidingWindow_withScheduler(model,
     best_metric_epoch = -1
     metric_values = []
     epoch_loss_values = []
+    metric_per_class = []
     metric_per_class_values = []
 
     post_pred = Compose([AsDiscrete(argmax=True, to_onehot=NUM_CLASSES)])
@@ -54,7 +55,7 @@ def TRAINING_withoutSlidingWindow_withScheduler(model,
         model.train()
         epoch_loss = 0
         step = 0
-        # for batch_data in tqdm(train_loader):
+        #for batch_data in tqdm(train_loader):
         for batch_data in train_loader:
             step += 1
             inputs, labels = (
@@ -77,13 +78,13 @@ def TRAINING_withoutSlidingWindow_withScheduler(model,
         if (epoch + 1) % VAL_INTERVAL == 0:
             model.eval()
             with torch.no_grad():
-                # for val_data in tqdm(val_loader):
+               # for val_data in tqdm(val_loader):
                 for val_data in val_loader:
                     val_inputs, val_labels = (
                         val_data["image"].to(device),
                         val_data["label"].to(device),
                     )
-                    # val_outputs = sliding_window_inference(val_inputs, SlidingWindowConfig.roi_size, SlidingWindowConfig.batch_size, model)
+                    #val_outputs = sliding_window_inference(val_inputs, SlidingWindowConfig.roi_size, SlidingWindowConfig.batch_size, model)
 
                     val_outputs = model(val_inputs)
                     val_outputs = [post_pred(i) for i in decollate_batch(val_outputs)]
